@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    jcenter()
+    maven { url "https://jitpack.io" }
+}
+
+dependencies {
+	implementation('com.github.symbiote-h2020:SymbIoTeLibraries:6.0.+') { changing = true }
+	
+	// Java 11
+	implementation('javax.xml.bind:jaxb-api:2.3.0')
+	implementation('com.sun.xml.bind:jaxb-core:2.3.0')
+	implementation('com.sun.xml.bind:jaxb-impl:2.3.0')
+}
