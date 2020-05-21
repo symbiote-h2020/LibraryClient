@@ -1,4 +1,5 @@
 package hr.fer.tel.symbiote;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -91,12 +92,11 @@ public class FindAndAccessSensorWithCloudUser {
 
     // choose one resource
     QueryResourceResult resource = searchResult.getBody().stream()
-            .filter(r -> r.getResourceType().stream()
-                .filter(type -> type.toLowerCase().contains("sensor"))
-                .anyMatch(s -> true)
-            )
-            .findFirst()
-            .get();
+      .filter(r -> r.getResourceType().stream()
+        .filter(type -> type.toLowerCase().contains("sensor"))
+        .anyMatch(s -> true))
+      .findFirst()
+      .get();
 
     System.out.println("Resource: " + resource);
     String resourceId = resource.getId();
@@ -110,11 +110,12 @@ public class FindAndAccessSensorWithCloudUser {
     List<ObservationValue> values = getReadCurrentValue(requestHeaders, resourceURL, noOfReadings);
     System.out.println("data received");
     values.stream()
-        .map(v -> v.getObsProperty().getName() + " = " + v.getValue() + v.getUom().getSymbol())
-        .forEach(System.out::println);
+      .map(v -> v.getObsProperty().getName() + " = " + v.getValue() + v.getUom().getSymbol())
+      .forEach(System.out::println);
   }
 
-  private List<ObservationValue> getReadCurrentValue(Map<String, String> requestHeaders, String resourceURL, int top) throws IOException {
+  private List<ObservationValue> getReadCurrentValue(Map<String, String> requestHeaders, String resourceURL, int top)
+      throws IOException {
     URL url = new URL(resourceURL + "/Observations?$top=" + top);
     HttpURLConnection con = (HttpURLConnection) url.openConnection();
     con.setRequestMethod("GET");
@@ -125,12 +126,13 @@ public class FindAndAccessSensorWithCloudUser {
 
     ObjectMapper mapper = new ObjectMapper();
     Reader reader = readAndLog(con.getInputStream());
-    List<Observation> response = mapper.readValue(reader, new TypeReference<List<Observation>>(){});
+    List<Observation> response = mapper.readValue(reader, new TypeReference<List<Observation>>() {
+    });
 
     logInfo("data received1");
     return response.stream()
-        .flatMap(o -> o.getObsValues().stream())
-        .collect(Collectors.toList());
+      .flatMap(o -> o.getObsValues().stream())
+      .collect(Collectors.toList());
 
   }
 
@@ -151,8 +153,9 @@ public class FindAndAccessSensorWithCloudUser {
     return response.getBody().get(resourceId);
   }
 
-  private QueryResponse searchForResources(Map<String, String> requestHeaders, CoreQueryRequest queryRequest) throws IOException {
-    String queryUrl = queryRequest.buildQuery(symbioteCoreUrl).replaceAll("#","%23");
+  private QueryResponse searchForResources(Map<String, String> requestHeaders, CoreQueryRequest queryRequest)
+      throws IOException {
+    String queryUrl = queryRequest.buildQuery(symbioteCoreUrl).replaceAll("#", "%23");
     logInfo("queryUrl = " + queryUrl);
 
     URL url = new URL(queryUrl);
@@ -177,23 +180,25 @@ public class FindAndAccessSensorWithCloudUser {
     // Insert Security Request into the headers
     try {
 
-        Set<AuthorizationCredentials> authorizationCredentialsSet = new HashSet<>();
-        Map<String, AAM> availableAAMs = securityHandler.getAvailableAAMs();
+      Set<AuthorizationCredentials> authorizationCredentialsSet = new HashSet<>();
+      Map<String, AAM> availableAAMs = securityHandler.getAvailableAAMs();
 
-        logInfo("Getting certificate for " + availableAAMs.get(homePlatformId).getAamInstanceId());
-        securityHandler.getCertificate(availableAAMs.get(homePlatformId), username, password, clientId);
+      logInfo("Getting certificate for " + availableAAMs.get(homePlatformId).getAamInstanceId());
+      securityHandler.getCertificate(availableAAMs.get(homePlatformId), username, password, clientId);
 
-        logInfo("Getting token from " + availableAAMs.get(homePlatformId).getAamInstanceId());
-        Token homeToken = securityHandler.login(availableAAMs.get(homePlatformId));
+      logInfo("Getting token from " + availableAAMs.get(homePlatformId).getAamInstanceId());
+      Token homeToken = securityHandler.login(availableAAMs.get(homePlatformId));
 
-        HomeCredentials homeCredentials = securityHandler.getAcquiredCredentials().get(homePlatformId).homeCredentials;
-        authorizationCredentialsSet.add(new AuthorizationCredentials(homeToken, homeCredentials.homeAAM, homeCredentials));
+      HomeCredentials homeCredentials = securityHandler.getAcquiredCredentials().get(homePlatformId).homeCredentials;
+      authorizationCredentialsSet
+        .add(new AuthorizationCredentials(homeToken, homeCredentials.homeAAM, homeCredentials));
 
-        SecurityRequest securityRequest = MutualAuthenticationHelper.getSecurityRequest(authorizationCredentialsSet, false);
-        return securityRequest.getSecurityRequestHeaderParams();
+      SecurityRequest securityRequest = MutualAuthenticationHelper.getSecurityRequest(authorizationCredentialsSet,
+          false);
+      return securityRequest.getSecurityRequestHeaderParams();
 
     } catch (SecurityHandlerException | ValidationException | JsonProcessingException | NoSuchAlgorithmException e) {
-        throw new RuntimeException(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -201,7 +206,6 @@ public class FindAndAccessSensorWithCloudUser {
     String result = readAndLogString(inputStream);
     return new StringReader(result);
   }
-
 
   protected static String callService(String securityRequest, String serviceURL, String payload) throws IOException {
     URL url = new URL(serviceURL);
@@ -230,8 +234,8 @@ public class FindAndAccessSensorWithCloudUser {
     BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
     String temp = null;
     StringBuilder sb = new StringBuilder();
-    while((temp = in.readLine()) != null){
-        sb.append(temp).append(" ");
+    while ((temp = in.readLine()) != null) {
+      sb.append(temp).append(" ");
     }
     String result = sb.toString();
     logInfo("Body: " + result);
@@ -239,7 +243,7 @@ public class FindAndAccessSensorWithCloudUser {
   }
 
   private static void logInfo(String message) {
-    if(LOGGING) {
+    if (LOGGING) {
       System.out.println(message);
     }
   }
